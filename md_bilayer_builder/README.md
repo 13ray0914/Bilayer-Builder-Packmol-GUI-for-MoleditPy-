@@ -5,8 +5,16 @@ Build a planar lipid bilayer in MoleditPy 5 with Packmol. Set the lipid composit
 ## Installation
 
 1. Open **Plugin → Plugin Manager…** in MoleditPy and drag the plugin ZIP into the manager. For a manual installation, copy the `md_bilayer_builder` folder into `~/.moleditpy/plugins/` and select **Reload Plugins**.
-2. Open **Plugin → Bilayer Builder (Packmol-GUI for MoleditPy)**. Under **Packmol Settings**, select your Packmol executable and an existing output parent folder. Use a Packmol version that supports periodic boundaries. The plugin has been tested with MoleditPy 5.3.2 and Packmol 21.2.3 on Windows x64.
-3. On Windows, the plugin looks first for `%LOCALAPPDATA%\Programs\Python\Python314\Scripts\packmol.exe`. Otherwise it looks for `packmol` on your PATH. You can browse to a different executable. The plugin remembers the full path and output location you select.
+2. Install Packmol for the same operating system as MoleditPy. For WSL, use Linux builds of both programs. Packmol 21.2.3 supports the builder's default grid placement. Its [PyPI release](https://pypi.org/project/packmol/21.2.3/) provides wheels for Windows, Linux and macOS 15 or newer.
+3. Open **Plugin → Bilayer Builder (Packmol-GUI for MoleditPy)**. Under **Packmol Settings**, choose an existing output parent folder. If you use a separate Packmol installation, select its executable with **Browse…** or enter its command name if it is on PATH. The builder remembers the chosen executable and output location.
+
+| Platform | Packmol installation |
+| --- | --- |
+| Windows | In the Python environment used for MoleditPy, run `python -m pip install "packmol==21.2.3"`. If using the Python 3.14 launcher, run `py -3.14 -m pip install "packmol==21.2.3"`. The plugin also checks the usual per-user Python 3.14 installation for `packmol.exe`. |
+| Linux / WSL | In the Python environment used for MoleditPy, run `python -m pip install "packmol==21.2.3"`. If you already have a system or Conda installation, run `command -v packmol` in its shell and select the returned path in the builder. |
+| macOS | Install with `brew install packmol`, or use the pip command above in the MoleditPy environment on macOS 15 or newer. The builder checks the default Homebrew location for Apple Silicon or Intel, including when opened from Finder. For a custom Homebrew prefix, run `command -v packmol` and select the returned path. [Homebrew Packmol formula](https://formulae.brew.sh/formula/packmol) |
+
+The builder checks the active Python environment before searching PATH. It also checks the Python user scripts directory on Linux and macOS. For other downloads or installation methods, see the [official Packmol installation guide](https://m3g.github.io/Packmol.jl/stable/installation/).
 
 ### Packmol 100.1.0
 
@@ -20,7 +28,7 @@ If the **Run Log** shows `ERROR: restart_from placement.dat` (exit code 171), re
 2. To use a custom lipid, select **Add Lipid from PDB…** and choose a single-model PDB containing one lipid residue. Choose a family or use **Custom Lipids**, and enter tail information if known. Set the head atom index and the index of each tail end. Indices start at 1 and follow the order of atom records in the file. Enter the reference area per lipid in Å² and the molecule’s net charge in elementary charge units.
 3. In **Cell, Water and Salt**, set the XY dimensions, water thickness on each side, salt type (NaCl or KCl), concentration and charge neutralization. The summary shows the planned molecule counts, net charge and added salt concentration after rounding to whole ion pairs.
 4. To embed a protein or a synthetic molecule, open **Embedded Molecules → Add Structure…**. Select a single-model PDB (multiple chains and residues are supported) or a single-molecule 3D SDF/MOL file. Supply the protonation state and explicit atoms you want in the output. Enter the net charge for a PDB (default 0). SDF/MOL inputs start with their formal charge.
-5. Choose the position and orientation of each structure. By default its geometric center moves to the origin, at the bilayer midplane. For a membrane-aligned PDB already in the desired coordinate frame, clear the centering box and leave all transformations at zero. Rotation around the laboratory X, Y and Z axes is applied in that order, followed by translation in Å. Use **Preview Constraints** to see the embedded atoms and the leaflet boundaries, and **Edit Placement…** to adjust the pose. Repeat **Add Structure…** for additional molecules or copies. Open **Packmol Input** to inspect the generated constraints.
+5. Choose the position and orientation of each structure relative to the membrane center. With centering enabled and translation set to zero, its geometric center sits at the XY center of the membrane on the leaflet midplane. For a PDB already aligned in this membrane-centered frame, clear the centering box and leave the transformations at zero. Rotation around the laboratory X, Y and Z axes is applied in that order, followed by translation in Å. Use **Preview Constraints** to see the embedded atoms and the leaflet boundaries, and **Edit Placement…** to adjust the pose. Repeat **Add Structure…** for additional molecules or copies. Open **Packmol Input** to inspect the generated constraints.
 6. Select **Build Bilayer** and follow the **Run Log**. Packmol holds the embedded structures fixed while placing the mobile molecules. The builder checks the final atom count and the identities and coordinates of the fixed atoms, then opens the 3D result. Drag to rotate, scroll to zoom, or select **Side View** or **Top View**. The **Embedded molecules** checkbox controls these atoms independently of the lipids, water and ions.
 
 In **Packmol Settings**, enter an **Output folder name** such as `POPC-run-01`. Both **Save Input Files** and **Build Bilayer** create a new folder under the selected parent. If the name is already in use, the next export or build uses `POPC-run-01-2`, then `POPC-run-01-3`, and so on. Leave the name blank for an automatically generated `bilayer-…` folder. Select **Open Output Folder** to open the most recent export or build.
@@ -30,6 +38,10 @@ The **Recommended** column shows the builder’s starting values for bilayers. *
 The **Run Log** updates as Packmol writes output. During a long optimization step, the status line shows the elapsed run time and the time since the last output. A packing bar describes the current step. The completion message appears after the output atom count has been checked.
 
 ## Output files
+
+The lower corner of the exported periodic cell is `(0, 0, 0)` Å. The opposite corner is `(Lx, Ly, Lz)`. The Packmol input, packed PDB and 3D preview use this frame. In `system.json`, `membrane_origin` gives the membrane center in these coordinates. Its Z coordinate can differ from `Lz/2` when the two leaflets have different thicknesses.
+
+For a build made with version 1.0.1 or earlier, keep the original `bilayer.pdb` beside its `system.json`. Open the PDB with **View Result in 3D…** and select **Save Cell-Aligned PDB…**. Open the saved copy in your molecular viewer. This applies one translation to every atom and preserves the cell dimensions, molecular geometry and orientation.
 
 | File | Contents |
 | --- | --- |

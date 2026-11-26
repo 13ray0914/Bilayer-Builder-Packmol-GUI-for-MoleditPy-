@@ -18,7 +18,7 @@ EMBEDDED_REMARK = f"REMARK 950 {PLUGIN_NAME} FIXED ATOMS "
 LEGACY_EMBEDDED_REMARK = "REMARK 950 MD BILAYER BUILDER FIXED ATOMS "
 
 
-def verify_fixed_output(path, placements):
+def verify_fixed_output(path, placements, origin=(0., 0., 0.)):
     """Check the fixed prefix and embed its length so the PDB travels on its own."""
     if not placements:
         return
@@ -29,7 +29,7 @@ def verify_fixed_output(path, placements):
             pending = Path(out.name)
             out.write(f"{EMBEDDED_REMARK}{n}\n".encode("ascii"))
             for p in placements:
-                for original, xyz in zip(p.structure.atoms,p.xyz):
+                for original, xyz in zip(p.structure.atoms, p.xyz + origin):
                     for raw in source:
                         out.write(raw)
                         if raw.startswith((b"ATOM  ",b"HETATM")):
@@ -124,9 +124,9 @@ class Placement:
             xyz[:, [a,b]] = xyz[:, [a,b]] @ np.array([[c,s],[-s,c]])
         return xyz + np.asarray(self.shift)
 
-    def write(self, path):
+    def write(self, path, origin=(0., 0., 0.)):
         with path.open("w", encoding="ascii") as out:
-            for i,(line,xyz) in enumerate(zip(self.structure.atoms,self.xyz),1):
+            for i,(line,xyz) in enumerate(zip(self.structure.atoms, self.xyz + origin),1):
                 out.write(f"{line[:6]}{i:5d}{line[11:30]}" + "".join(f"{v:8.3f}" for v in xyz) + line[54:] + "\n")
                 if i in self.structure.breaks:
                     out.write("TER\n")

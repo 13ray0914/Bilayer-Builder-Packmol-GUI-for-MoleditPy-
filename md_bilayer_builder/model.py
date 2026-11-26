@@ -171,6 +171,10 @@ class Plan:
         self.x, self.y = s.xy or (side, side)
         self.bounds = (-self.x/2, self.x/2, -self.y/2, self.y/2,
                        -self.interfaces[1] - s.water, self.interfaces[0] + s.water)
+        # Placement is edited around the membrane midplane. Packmol and PDB
+        # viewers use the exported cell's lower corner as their origin.
+        self.membrane_origin = tuple(-v for v in self.bounds[::2])
+        self.cell_bounds = (0., self.x, 0., self.y, 0., self.bounds[5] - self.bounds[4])
         volumes = [self.x * self.y * s.water] * 2
         if self.excluded:
             if any(2*r + s.tolerance > length for r,length in zip(excluded.extents,(self.x,self.y))):
@@ -240,9 +244,10 @@ class Plan:
 
     def deck(self):
         s = self.settings
-        a, b, c, d, low, high = self.bounds
+        low, high = self.bounds[4:]
+        midplane = self.membrane_origin[2]
         lines = ["filetype pdb", "output bilayer.pdb", "packall", "movebadrandom", f"maxit {s.maxit}", f"tolerance {s.tolerance:.3f}",
-                 f"seed {s.seed}", f"nloop {s.loops}", f"pbc {a:.4f} {c:.4f} {low:.4f} {b:.4f} {d:.4f} {high:.4f}"]
+                 f"seed {s.seed}", f"nloop {s.loops}", f"pbc 0 0 0 {self.x:.4f} {self.y:.4f} {self.cell_bounds[5]:.4f}"]
         if s.lattice:
             lines.append("restart_from placement.dat")
         if self.placements:
@@ -263,15 +268,15 @@ class Plan:
         def block(file, count, chain, z0, z1, constraints=()):
             if count:
                 lines.extend(["", f"structure {file}.pdb", f"  number {count}", f"  chain {chain}", "  resnumbers 3",
-                              f"  inside box {a:.4f} {c:.4f} {z0:.4f} {b:.4f} {d:.4f} {z1:.4f}",
+                              f"  inside box 0 0 {midplane + z0:.4f} {self.x:.4f} {self.y:.4f} {midplane + z1:.4f}",
                               *constraints, "end structure"])
         for i, ((mol, upper, lower), head) in enumerate(zip(self.rows, self.heads)):
             for sign, count, chain, interface in [(1, upper, "U", self.interfaces[0]), (-1, lower, "L", self.interfaces[1])]:
                 outer = "over" if sign == 1 else "below"
                 inner = "below" if sign == 1 else "over"
-                planes = [f"  atoms {mol.head}", f"    {outer} plane 0 0 1 {sign * head:.4f}", "  end atoms",
+                planes = [f"  atoms {mol.head}", f"    {outer} plane 0 0 1 {midplane + sign * head:.4f}", "  end atoms",
                           "  atoms " + " ".join(map(str, mol.tails)),
-                          f"    {inner} plane 0 0 1 {sign * s.tail_band:.4f}", "  end atoms"]
+                          f"    {inner} plane 0 0 1 {midplane + sign * s.tail_band:.4f}", "  end atoms"]
                 planes.extend(hydrogen_radius([j for j, atom in enumerate(mol.atoms, 1) if atom[76:78].strip() == "H"]))
                 z0, z1 = sorted((-sign * s.tail_band, sign * (interface + 3)))
                 block(f"lipid_{i+1}", count, chain, max(low, z0), min(high, z1), planes)
@@ -285,7 +290,9 @@ class Plan:
         # Packmol restart entries are initial translation and three Euler angles
         # in radians, in structure-block order. All six variables remain free.
         rng = random.Random(self.settings.seed)
-        def write(*values):
+        def write(x, y, z, *angles):
+            ox, oy, oz = self.membrane_origin
+            values = (x + ox, y + oy, z + oz, *angles)
             stream.write(" ".join(f"{v:.7f}" for v in values) + "\n")
 
         def free_layer(n, side, z=None):
@@ -347,7 +354,7 @@ class Plan:
         embedded = []
         for i,p in enumerate(self.placements,1):
             name = f"embedded_{i}.pdb"
-            p.write(output_file(name))
+            p.write(output_file(name), self.membrane_origin)
             embedded.append(dict(name=p.structure.name, pdb=name, atoms=len(p.xyz), charge=p.charge,
                                  shift=p.shift, rotation_xyz_deg=p.angles, center=p.center))
         for i, (mol, u, l) in enumerate(self.rows, 1):
@@ -367,6 +374,7 @@ class Plan:
                 self.write_placement(stream)
         output_file("system.json").write_text(json.dumps(dict(settings=vars(self.settings), lipids=manifest,
             executable=str(executable) if executable else None, embedded=embedded,
-            bounds=self.bounds, water=self.water_count, water_by_leaflet=self.slabs["water"],
+            bounds=self.cell_bounds, membrane_origin=self.membrane_origin,
+            water=self.water_count, water_by_leaflet=self.slabs["water"],
             cations=self.cations, anions=self.anions,
             added_pairs=self.pairs, atoms=self.atom_count), ensure_ascii=False, indent=2), encoding="utf-8")

@@ -53,7 +53,7 @@ class EmbeddedPanel(QWidget):
         dlg = QDialog(self)
         dlg.setWindowTitle(f"Placement  ·  {p.structure.name}")
         form = QFormLayout(dlg)
-        center = QCheckBox("Move the geometric center to the origin first")
+        center = QCheckBox("Move the geometric center to the membrane center first")
         center.setChecked(p.center)
         form.addRow(center)
         fields = []

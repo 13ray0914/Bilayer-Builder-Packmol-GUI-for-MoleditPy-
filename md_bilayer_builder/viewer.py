@@ -1,10 +1,11 @@
+from contextlib import ExitStack
 from pathlib import Path
 
 import numpy as np
 import pyvista as pv
 from pyvistaqt import QtInteractor
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QCheckBox, QDialog, QHBoxLayout, QLabel, QPushButton, QVBoxLayout
+from PySide6.QtWidgets import QCheckBox, QDialog, QFileDialog, QHBoxLayout, QLabel, QMessageBox, QPushButton, QVBoxLayout
 
 from .model import coordinates
 from .inserts import EMBEDDED_REMARK, LEGACY_EMBEDDED_REMARK
@@ -40,19 +41,25 @@ def read_atoms(path):
     residues = []
     bounds = None
     fixed_remaining = 0
+    packmol_file = False
+    legacy_xy = False
     with Path(path).open(encoding="ascii", errors="replace") as file:
         for line in file:
+            if "Built with Packmol" in line:
+                packmol_file = True
             if line.startswith((EMBEDDED_REMARK, LEGACY_EMBEDDED_REMARK)):
                 fixed_remaining = int(line.split()[-1])
             if line.startswith("CRYST1"):
                 dims = [float(line[i:i+9]) for i in (6, 15, 24)]
-                bounds = tuple(v for side in dims for v in (-side/2, side/2))
+                bounds = tuple(v for side in dims for v in (0., side))
             if not line.startswith(("ATOM  ", "HETATM")):
                 continue
             name = line[12:16].strip()
             residue = line[17:21].strip()
             element = line[76:78].strip().upper() or name.lstrip("0123456789")[:1]
             xyz = coordinates(line)
+            if packmol_file and bounds and xyz[0] < -0.1 * bounds[1] and xyz[1] < -0.1 * bounds[3]:
+                legacy_xy = True
             if fixed_remaining:
                 groups["Embedded molecules"].append(xyz)
                 fixed_remaining -= 1
@@ -80,7 +87,31 @@ def read_atoms(path):
             groups[group].append(xyz)
     if not any(groups.values()):
         raise ValueError("The PDB contains no atoms to display.")
+    # Standalone centered Packmol files predate corner-based export. The
+    # original system.json takes precedence when the exact bounds are known.
+    if legacy_xy:
+        bounds = tuple(v for side in bounds[1::2] for v in (-side/2, side/2))
     return groups, bounds, backbone_segments(residues)
+
+
+def save_cell_aligned_copy(source, destination, bounds):
+    """Translate a legacy builder PDB using the exact lower corner from its manifest."""
+    corner = bounds[::2]
+    destination = Path(destination)
+    with Path(source).open("rb") as original, ExitStack() as rollback:
+        with destination.open("xb") as result:
+            rollback.callback(destination.unlink)
+            for line in original:
+                if line.startswith((b"ATOM  ", b"HETATM")):
+                    translated = b"".join(
+                        f"{float(line[i:i+8]) - low:8.3f}".encode("ascii")
+                        for i, low in zip((30, 38, 46), corner)
+                    )
+                    if len(translated) != 24:
+                        raise ValueError("A translated coordinate exceeds the PDB field width.")
+                    line = line[:30] + translated + line[54:]
+                result.write(line)
+        rollback.pop_all()
 
 
 class Viewer(QDialog):
@@ -95,10 +126,12 @@ class Viewer(QDialog):
         self.plot.set_background("#182731")
         controls = QHBoxLayout()
         root.addLayout(controls)
+        legacy_bounds = bounds if bounds and any(bounds[::2]) else None
         if plan:
-            bounds = plan.bounds
+            bounds = plan.cell_bounds
             x0, x1, y0, y1, low, high = bounds
-            for start, end in [(plan.interfaces[0], high), (low, -plan.interfaces[1])]:
+            midplane = plan.membrane_origin[2]
+            for start, end in [(midplane + plan.interfaces[0], high), (low, midplane - plan.interfaces[1])]:
                 if end > start:
                     self.plot.add_mesh(pv.Box(bounds=(x0,x1,y0,y1,start,end)), color="#62b8ed", opacity=0.22)
             for (_, u, l), h in zip(plan.rows, plan.heads):
@@ -109,7 +142,7 @@ class Viewer(QDialog):
                 self.plane(plan, z, "#79c9a8")
             legend = "Blue — water layers     Orange — head boundaries     Green — tail boundaries"
             for placement in plan.placements:
-                self.plot.add_points(placement.xyz,color=COLORS["Embedded molecules"],point_size=7,render_points_as_spheres=True)
+                self.plot.add_points(placement.xyz + plan.membrane_origin,color=COLORS["Embedded molecules"],point_size=7,render_points_as_spheres=True)
             if plan.placements:
                 legend += "     Pink — embedded molecules"
             controls.addWidget(QLabel(legend))
@@ -141,15 +174,31 @@ class Viewer(QDialog):
         root.addLayout(tools)
         tools.addWidget(QLabel("Drag with the left mouse button to rotate. Scroll to zoom."))
         tools.addStretch()
+        if path and legacy_bounds:
+            save = QPushButton("Save Cell-Aligned PDB…")
+            save.clicked.connect(lambda: self.save_aligned(path, legacy_bounds))
+            tools.addWidget(save)
         for text, slot in [("Side View", self.plot.view_xz), ("Top View", self.plot.view_xy)]:
             btn = QPushButton(text)
             btn.clicked.connect(lambda _, callback=slot: callback())
             tools.addWidget(btn)
 
     def plane(self, plan, z, color):
-        mesh = pv.Plane(center=(0,0,z), direction=(0,0,1), i_size=plan.x, j_size=plan.y,
+        x, y, midplane = plan.membrane_origin
+        mesh = pv.Plane(center=(x,y,midplane + z), direction=(0,0,1), i_size=plan.x, j_size=plan.y,
                         i_resolution=1, j_resolution=1)
         self.plot.add_mesh(mesh, color=color, opacity=.34, show_edges=True, edge_color=color)
+
+    def save_aligned(self, path, bounds):
+        target, _ = QFileDialog.getSaveFileName(self, "Save a cell-aligned copy",
+            str(Path(path).with_name("bilayer-cell-aligned.pdb")), "PDB (*.pdb)")
+        if target:
+            try:
+                save_cell_aligned_copy(path, target, bounds)
+            except FileExistsError:
+                QMessageBox.warning(self, "File already exists", "Choose a new filename for the cell-aligned copy.")
+            except (OSError, ValueError) as exc:
+                QMessageBox.warning(self, "Could not save the PDB", str(exc))
 
     def visibility(self, actors, on):
         for actor in actors:

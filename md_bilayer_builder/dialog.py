@@ -4,7 +4,9 @@ import json
 import os
 import platform
 import shutil
+import site
 import subprocess
+import sysconfig
 from contextlib import ExitStack
 from pathlib import Path
 
@@ -49,12 +51,39 @@ def editor():
 
 
 def default_executable():
-    if os.name == "nt":
-        local = os.environ.get("LOCALAPPDATA", "")
-        candidate = Path(local) / "Programs/Python/Python314/Scripts/packmol.exe"
-        if candidate.is_file():
+    name = "packmol.exe" if os.name == "nt" else "packmol"
+    candidates = [Path(sysconfig.get_path("scripts")) / name]
+    local = os.environ.get("LOCALAPPDATA")
+    if os.name == "nt" and local:
+        candidates.append(Path(local) / "Programs/Python/Python314/Scripts" / name)
+    found = shutil.which(name)
+    if found:
+        candidates.append(Path(found))
+    if os.name != "nt" and site.USER_BASE:
+        candidates.append(Path(site.USER_BASE) / "bin" / name)
+    if platform.system() == "Darwin":
+        # Apps opened from Finder may not inherit the Homebrew PATH.
+        homebrew = "/opt/homebrew/bin" if platform.machine() == "arm64" else "/usr/local/bin"
+        candidates.append(Path(homebrew) / name)
+    for candidate in candidates:
+        if candidate.is_absolute() and candidate.is_file() and os.access(candidate, os.X_OK):
             return str(candidate)
-    return shutil.which("packmol") or ""
+    return ""
+
+
+def resolve_executable(value):
+    value = value.strip().strip('"')
+    exe = Path(value).expanduser()
+    if value and exe.name == value:
+        # Allow a command name from PATH as well as a file chosen with Browse.
+        match = shutil.which(value)
+        if match:
+            exe = Path(match)
+    if not exe.is_absolute() or not exe.is_file():
+        raise ValueError("Select an installed Packmol executable or enter a command from PATH in Packmol Settings.")
+    if not os.access(exe, os.X_OK):
+        raise ValueError(f"Packmol does not have execute permission: {exe}")
+    return exe
 
 
 class Builder(QDialog):
@@ -148,6 +177,7 @@ class Builder(QDialog):
         self.tabs.addTab(engine, "Packmol Settings")
         form = QFormLayout(engine)
         self.exe = QLineEdit(self.prefs.value("exe", default_executable(), type=str))
+        self.exe.setPlaceholderText("Full path to Packmol or a command from PATH")
         self.output = QLineEdit(self.prefs.value("output", str(Path.home()), type=str))
         for label, field, browse in [("Packmol executable", self.exe, self.choose_exe),
                                      ("Output parent folder", self.output, self.choose_output)]:
@@ -373,9 +403,7 @@ class Builder(QDialog):
         if self.proc:
             return
         try:
-            exe = Path(self.exe.text().strip().strip('"')).expanduser()
-            if not exe.is_absolute() or not exe.is_file():
-                raise ValueError("Enter the full path to the Packmol executable in Packmol Settings.")
+            exe = resolve_executable(self.exe.text())
             self.active_plan = self.plan()
             self.export(self.active_plan, exe)
         except (ValueError, OSError) as exc:
@@ -478,11 +506,11 @@ class Builder(QDialog):
                 total = sum(line.startswith((b"ATOM  ",b"HETATM")) for line in stream)
             if total != self.active_plan.atom_count:
                 raise ValueError(f"Expected {self.active_plan.atom_count:,} atoms in the output PDB, but found {total:,}.")
-            verify_fixed_output(path, self.active_plan.placements)
+            verify_fixed_output(path, self.active_plan.placements, self.active_plan.membrane_origin)
             self.result = path
             self.status.setText(f"Bilayer complete  ·  {total:,} atoms  ·  {path}")
             self.log.appendPlainText(self.status.text())
-            self.show_view(path=path, bounds=self.active_plan.bounds)
+            self.show_view(path=path, bounds=self.active_plan.cell_bounds)
         except (OSError, ValueError) as exc:
             if path.is_file():
                 path.rename(path.with_name("bilayer.incomplete.pdb"))
@@ -512,7 +540,9 @@ class Builder(QDialog):
             path = Path(chosen)
         manifest = path.with_name("system.json")
         try:
-            bounds = json.loads(manifest.read_text(encoding="utf-8")).get("bounds") if manifest.is_file() else None
+            bounds = None
+            if path.name.lower() == "bilayer.pdb" and manifest.is_file():
+                bounds = json.loads(manifest.read_text(encoding="utf-8")).get("bounds")
             self.show_view(path=path, bounds=bounds)
         except (ValueError, OSError) as exc:
             self.error(exc)
