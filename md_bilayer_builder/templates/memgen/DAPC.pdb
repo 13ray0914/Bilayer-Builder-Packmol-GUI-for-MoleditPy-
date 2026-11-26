@@ -1,3 +1,4 @@
+REMARK   1 Modified by 13ray0914 on 2026-11-26: populated PDB element fields.
 ATOM      1  N   DAPC    1     32.008 -28.629  19.404  1.00  0.00      MEMB  N
 ATOM      2  C12 DAPC    1     30.635 -28.086  19.854  1.00  0.00      MEMB  C
 ATOM      3 H12A DAPC    1     30.904 -27.110  20.230  1.00  0.00      MEMB  H

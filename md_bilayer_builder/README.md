@@ -48,6 +48,8 @@ The **Run Log** updates as Packmol writes output. During a long optimization ste
 
 ## Sources and runtime
 
+The original Python code and documentation are distributed under the [MIT License](LICENSE). See the [third-party notices](THIRD_PARTY.md) for the licenses and corresponding source of the bundled materials.
+
 The library includes 28 lipid templates, covering cholesterol (CHL1) and phosphatidylcholine, phosphatidylethanolamine, phosphatidylserine, phosphatidylglycerol and phosphatidic acid species. The seven original lipid templates come from Packmol.jl and the other 21 from PACKMOL-Memgen data. See [the template catalog](templates/README.md) for names, provenance and licenses. [Packmol.jl](https://github.com/m3g/Packmol.jl/tree/f2d7af921be07b7ac9ec14279a47e842247313ca/src/Recipes/lipids) · [PACKMOL-Memgen](https://doi.org/10.1021/acs.jcim.9b00269)
 
 The leaflet controls draw on CHARMM-GUI Membrane Builder. The constraint preview, input inspection and run log draw on PACKMOL-GUI. [CHARMM-GUI Membrane Builder](https://www.charmm-gui.org/?doc=demo&id=membrane_builder&lesson=3) · [PACKMOL-GUI paper](https://doi.org/10.1021/acs.jcim.4c01639)

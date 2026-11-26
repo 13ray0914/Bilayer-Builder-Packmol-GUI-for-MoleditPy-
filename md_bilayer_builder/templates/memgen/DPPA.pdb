@@ -1,3 +1,4 @@
+REMARK   1 Modified by 13ray0914 on 2026-11-26: populated PDB element fields.
 ATOM      1  P   DPPA    1    -39.593  12.599  19.058  1.00  0.00      MEMB  P
 ATOM      2  O13 DPPA    1    -39.709  12.420  20.515  1.00  0.00      MEMB  O
 ATOM      3  O14 DPPA    1    -40.691  13.308  18.377  1.00  0.00      MEMB  O

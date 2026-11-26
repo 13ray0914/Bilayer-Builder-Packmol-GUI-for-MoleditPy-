@@ -1,3 +1,4 @@
+REMARK   1 Modified by 13ray0914 on 2026-11-26: populated PDB element fields.
 ATOM      1  N   DMPS    1     30.125 -36.725  16.999  1.00  0.00      MEMB  N
 ATOM      2  HN1 DMPS    1     29.788 -37.715  16.968  1.00  0.00      MEMB  H
 ATOM      3  HN2 DMPS    1     29.638 -36.216  17.773  1.00  0.00      MEMB  H

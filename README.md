@@ -8,6 +8,10 @@ Download [Bilayer Builder (Packmol-GUI for MoleditPy).zip](https://github.com/13
 
 See the [user guide](md_bilayer_builder/README.md) for leaflet composition, hydration, salt, embedded structures and 3D visualization. The [lipid catalog](md_bilayer_builder/templates/README.md) describes the included templates and their sources.
 
+## License
+
+The original Python code and documentation are available under the [MIT License](LICENSE). The bundled molecular templates and Windows runtime libraries have their own licenses. See the [third-party notices and corresponding source downloads](md_bilayer_builder/THIRD_PARTY.md).
+
 ## References
 
 The bilayer setup draws on the membrane recipes in Packmol.jl. The PACKMOL-GUI paper informed the interface for configuring and previewing packing constraints.

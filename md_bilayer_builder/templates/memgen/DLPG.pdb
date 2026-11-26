@@ -1,3 +1,4 @@
+REMARK   1 Modified by 13ray0914 on 2026-11-26: populated PDB element fields.
 ATOM      1  C13 DLPG    1     -0.339  48.072  17.158  1.00  0.00      MEMB  C
 ATOM      2 H13A DLPG    1      0.319  47.988  18.050  1.00  0.00      MEMB  H
 ATOM      3 H13B DLPG    1     -1.315  48.434  17.545  1.00  0.00      MEMB  H

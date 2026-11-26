@@ -1,3 +1,4 @@
+REMARK   1 Modified by 13ray0914 on 2026-11-26: populated PDB element fields.
 ATOM      1  N   DSPC    1     -6.593 -13.513  22.964  1.00  0.00      MEMB  N
 ATOM      2  C13 DSPC    1     -7.923 -13.031  23.457  1.00  0.00      MEMB  C
 ATOM      3 H13A DSPC    1     -7.754 -11.965  23.487  1.00  0.00      MEMB  H

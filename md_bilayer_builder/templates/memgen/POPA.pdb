@@ -1,3 +1,4 @@
+REMARK   1 Modified by 13ray0914 on 2026-11-26: populated PDB element fields.
 ATOM      1  P   POPA    1    -11.336 -20.238  18.979  1.00  0.00      MEMB  P
 ATOM      2  O13 POPA    1    -11.952 -18.913  18.788  1.00  0.00      MEMB  O
 ATOM      3  O14 POPA    1    -11.504 -21.036  20.245  1.00  0.00      MEMB  O

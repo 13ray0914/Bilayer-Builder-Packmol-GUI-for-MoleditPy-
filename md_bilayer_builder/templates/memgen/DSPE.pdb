@@ -1,3 +1,4 @@
+REMARK   1 Modified by 13ray0914 on 2026-11-26: populated PDB element fields.
 ATOM      1  N   DSPE    1     16.736  -2.424  18.933  1.00  0.00      MEMB  N
 ATOM      2  HN1 DSPE    1     17.454  -2.725  18.244  1.00  0.00      MEMB  H
 ATOM      3  HN2 DSPE    1     15.777  -2.559  18.552  1.00  0.00      MEMB  H

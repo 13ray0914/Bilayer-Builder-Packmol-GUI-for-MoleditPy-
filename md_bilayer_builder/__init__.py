@@ -1,6 +1,7 @@
 PLUGIN_NAME = "Bilayer Builder (Packmol-GUI for MoleditPy)"
-PLUGIN_VERSION = "1.0.0"
+PLUGIN_VERSION = "1.0.1"
 PLUGIN_AUTHOR = "13ray0914"
+PLUGIN_LICENSE = "MIT"
 PLUGIN_DESCRIPTION = "Build lipid bilayers with Packmol, embed proteins and small molecules, and inspect the packed structure in 3D."
 PLUGIN_SUPPORTED_MOLEDITPY_VERSION = ">=5.0.0, <6.0.0"
 PLUGIN_SUPPORTED_PYTHON_VERSION = ">=3.9, <3.15"

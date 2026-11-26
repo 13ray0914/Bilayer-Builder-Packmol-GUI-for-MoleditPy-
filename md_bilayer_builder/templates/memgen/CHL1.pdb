@@ -1,3 +1,4 @@
+REMARK   1 Modified by 13ray0914 on 2026-11-26: populated PDB element fields.
 ATOM      1  C3  CHL1    1    -13.419 -39.424  17.367  1.00  0.00      MEMB  C
 ATOM      2  H3  CHL1    1    -13.082 -40.477  17.478  1.00  0.00      MEMB  H
 ATOM      3  O3  CHL1    1    -13.648 -38.851  18.633  1.00  0.00      MEMB  O
