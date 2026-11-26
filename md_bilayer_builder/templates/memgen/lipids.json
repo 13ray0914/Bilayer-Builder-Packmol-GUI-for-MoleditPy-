@@ -1,0 +1,212 @@
+[
+  {
+    "name": "CHL1",
+    "head": 3,
+    "tails": [
+      67,
+      71
+    ],
+    "area": 39.0,
+    "charge": 0
+  },
+  {
+    "name": "DLPC",
+    "head": 1,
+    "tails": [
+      72,
+      103
+    ],
+    "area": 63.0,
+    "charge": 0
+  },
+  {
+    "name": "DSPC",
+    "head": 1,
+    "tails": [
+      90,
+      139
+    ],
+    "area": 66.0,
+    "charge": 0
+  },
+  {
+    "name": "DOPE",
+    "head": 1,
+    "tails": [
+      79,
+      126
+    ],
+    "area": 65.0,
+    "charge": 0
+  },
+  {
+    "name": "DOPS",
+    "head": 1,
+    "tails": [
+      81,
+      128
+    ],
+    "area": 54.0,
+    "charge": -1
+  },
+  {
+    "name": "DOPG",
+    "head": 1,
+    "tails": [
+      81,
+      128
+    ],
+    "area": 71.0,
+    "charge": -1
+  },
+  {
+    "name": "DOPA",
+    "head": 1,
+    "tails": [
+      70,
+      117
+    ],
+    "area": 64.0,
+    "charge": -1
+  },
+  {
+    "name": "POPA",
+    "head": 1,
+    "tails": [
+      70,
+      113
+    ],
+    "area": 60.0,
+    "charge": -1
+  },
+  {
+    "name": "DPPA",
+    "head": 1,
+    "tails": [
+      66,
+      109
+    ],
+    "area": 55.0,
+    "charge": -1
+  },
+  {
+    "name": "DMPE",
+    "head": 1,
+    "tails": [
+      69,
+      106
+    ],
+    "area": 63.0,
+    "charge": 0
+  },
+  {
+    "name": "DPPE",
+    "head": 1,
+    "tails": [
+      75,
+      118
+    ],
+    "area": 61.0,
+    "charge": 0
+  },
+  {
+    "name": "DSPE",
+    "head": 1,
+    "tails": [
+      81,
+      130
+    ],
+    "area": 50.0,
+    "charge": 0
+  },
+  {
+    "name": "DLPG",
+    "head": 1,
+    "tails": [
+      65,
+      96
+    ],
+    "area": 66.0,
+    "charge": -1
+  },
+  {
+    "name": "DMPG",
+    "head": 1,
+    "tails": [
+      71,
+      108
+    ],
+    "area": 65.0,
+    "charge": -1
+  },
+  {
+    "name": "DPPG",
+    "head": 1,
+    "tails": [
+      77,
+      120
+    ],
+    "area": 62.0,
+    "charge": -1
+  },
+  {
+    "name": "DPPS",
+    "head": 1,
+    "tails": [
+      77,
+      120
+    ],
+    "area": 58.0,
+    "charge": -1
+  },
+  {
+    "name": "SDPC",
+    "head": 1,
+    "tails": [
+      90,
+      139
+    ],
+    "area": 73.0,
+    "charge": 0
+  },
+  {
+    "name": "DAPE",
+    "head": 1,
+    "tails": [
+      79,
+      126
+    ],
+    "area": 65.0,
+    "charge": 0
+  },
+  {
+    "name": "DAPC",
+    "head": 1,
+    "tails": [
+      88,
+      135
+    ],
+    "area": 73.0,
+    "charge": 0
+  },
+  {
+    "name": "DMPS",
+    "head": 1,
+    "tails": [
+      71,
+      108
+    ],
+    "area": 59.0,
+    "charge": -1
+  },
+  {
+    "name": "DSPG",
+    "head": 1,
+    "tails": [
+      83,
+      132
+    ],
+    "area": 56.0,
+    "charge": -1
+  }
+]
