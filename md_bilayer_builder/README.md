@@ -8,6 +8,12 @@ Build a planar lipid bilayer in MoleditPy 5 with Packmol. Set the lipid composit
 2. Open **Plugin → Bilayer Builder (Packmol-GUI for MoleditPy)**. Under **Packmol Settings**, select your Packmol executable and an existing output parent folder. Use a Packmol version that supports periodic boundaries. The plugin has been tested with MoleditPy 5.3.2 and Packmol 21.2.3 on Windows x64.
 3. On Windows, the plugin looks first for `%LOCALAPPDATA%\Programs\Python\Python314\Scripts\packmol.exe`. Otherwise it looks for `packmol` on your PATH. You can browse to a different executable. The plugin remembers the full path and output location you select.
 
+### Packmol 100.1.0
+
+In **Packmol Settings**, clear **Start lipids and solvent on a grid**, then select **Build Bilayer**. This lets Packmol generate the initial positions. Clear the checkbox again after using **Restore Packing Defaults**.
+
+If the **Run Log** shows `ERROR: restart_from placement.dat` (exit code 171), rerun the build with the checkbox cleared. The builder’s grid file stores molecule positions and rotations in the Fortran Packmol 21.2.3 format. Packmol 100.1.0 expects atomic coordinates (PDB, XYZ or mmCIF) for a restart. The `packall` and `movebadrandom` warnings can be ignored in 100.1.0. [Packmol migration guide](https://m3g.github.io/Packmol.jl/stable/migrating/)
+
 ## Build a bilayer
 
 1. In **Lipid Composition**, expand **Sterols** or a phospholipid family (PA, PC, PE, PG or PS). PC opens by default. Each row shows the lipid type, charge, tail info, upper and lower leaflet counts, and reference area per lipid. **Tail Info** gives the carbon count and number of double bonds for sn-1 and sn-2, respectively. For example, POPC displays `16:0 / 18:1`. Cholesterol displays `N/A` because it has no sn-1/sn-2 acyl pair. Enter molecule counts for the upper (+Z) and lower (−Z) leaflets. Counts in collapsed groups are included in builds and in **Copy Upper Leaflet to Lower**.

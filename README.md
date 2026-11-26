@@ -9,6 +9,8 @@ This independently developed MoleditPy plugin builds lipid bilayers with Packmol
 
 Download [Bilayer Builder (Packmol-GUI for MoleditPy).zip](https://github.com/13ray0914/Bilayer-Builder-Packmol-GUI-for-MoleditPy-/releases/latest/download/Bilayer.Builder.Packmol-GUI.for.MoleditPy.zip). Open **Plugin → Plugin Manager…** in MoleditPy and drag the ZIP into the manager. In the builder, select your Packmol executable under **Packmol Settings**.
 
+**Using Packmol 100.1.0?** In **Packmol Settings**, clear **Start lipids and solvent on a grid** before selecting **Build Bilayer**. [Packmol 100.1.0 troubleshooting](md_bilayer_builder/README.md#packmol-10010)
+
 See the [user guide](md_bilayer_builder/README.md) for leaflet composition, hydration, salt, embedded structures and 3D visualization. The [lipid catalog](md_bilayer_builder/templates/README.md) describes the included templates and their sources.
 
 ## License
